@@ -1,7 +1,7 @@
 {
-    "name": "NFC",
+    "name": "NumPad",
     "version": "0.0.2",
-    "description": "NFC-Blöcke",
+    "description": "NumPad-Blöcke",
     "license": "MIT",
     "dependencies": {
         "core": "*"
