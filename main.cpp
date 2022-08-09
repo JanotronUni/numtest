@@ -1,6 +1,6 @@
 #include "pxt.h"
 using namespace pxt;
-namespace NFC {
+namespace NumPad {
     //%
     int RxBufferedSize(){
         return uBit.serial.rxBufferedSize();
