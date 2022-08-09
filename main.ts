@@ -1,155 +1,123 @@
 
 /**
- *NFC reader
+ *NumPad
  */
-//% weight=10 color=#1d8045 icon="\uf0e7" block="NFC"
-namespace NFC {
-    let myNFCevent: Action = null;
-    let receivedLen = 0;
-    let password = pins.createBuffer(6);
-    let receivedBuffer = pins.createBuffer(25);
-    let uid = pins.createBuffer(4);
-    let myRxPin=SerialPin.P12;
-    let myTxPin=SerialPin.P16;
-    serial.redirect(
-            myRxPin,
-            myTxPin,
-            BaudRate.BaudRate115200
-        )
-    let init=true;
-    password[0] = 0xFF;
-    password[1] = 0xFF;
-    password[2] = 0xFF;
-    password[3] = 0xFF;
-    password[4] = 0xFF;
-    password[5] = 0xFF;
-
-    //% advanced=true shim=NFC::RxBufferedSize
-    function RxBufferedSize(): number {
-        return 1
-    }
-
-    function wakeup(): void {
-        let myBuffer: number[] = [];
-        myBuffer = [0x55, 0x55, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0x03, 0xfd, 0xd4,
-            0x14, 0x01, 0x17, 0x00];
-        let wake = pins.createBufferFromArray(myBuffer);
-        serial.writeBuffer(wake);
-        basic.pause(50);
-        receivedLen = RxBufferedSize();
-        if (receivedLen == 15) {
-            receivedBuffer = serial.readBuffer(15);
-        }
-	
-    }
-
-    
-    
-
+//% weight=10 color=#1d8045 icon="\uf0e7" block="NumPad"
+namespace NumPad {
+    let toAdd = ""
 
     //% weight=90
-    //% blockId="nfcEvent" block="Wenn Chip erkannt wurde"
-    export function nfcEvent(tempAct: Action) {
-        myNFCevent = tempAct;
+    //% blockId="nfcEvent" block="Gib Nummernfolge aus"
+  export function GibNummernfolgeAus () {
+    toAdd = "-1"
+    while (toAdd[-1] != "#") {
+        pins.digitalWritePin(DigitalPin.P13, 1)
+        if (pins.digitalReadPin(DigitalPin.P0) == 1) {
+            pins.digitalWritePin(DigitalPin.P13, 0)
+            toAdd = "" + toAdd + "1"
+        } else if (pins.digitalReadPin(DigitalPin.P1) == 1) {
+            pins.digitalWritePin(DigitalPin.P13, 0)
+            toAdd = "" + toAdd + "4"
+        } else if (pins.digitalReadPin(DigitalPin.P2) == 1) {
+            pins.digitalWritePin(DigitalPin.P13, 0)
+            toAdd = "" + toAdd + "7"
+        } else if (pins.digitalReadPin(DigitalPin.P8) == 1) {
+            pins.digitalWritePin(DigitalPin.P13, 0)
+            toAdd = "" + toAdd + "*"
+        }
+        pins.digitalWritePin(DigitalPin.P13, 0)
+        basic.pause(10)
+        pins.digitalWritePin(DigitalPin.P14, 1)
+        if (pins.digitalReadPin(DigitalPin.P0) == 1) {
+            pins.digitalWritePin(DigitalPin.P14, 0)
+            toAdd = "" + toAdd + "2"
+        } else if (pins.digitalReadPin(DigitalPin.P1) == 1) {
+            pins.digitalWritePin(DigitalPin.P14, 0)
+            toAdd = "" + toAdd + "5"
+        } else if (pins.digitalReadPin(DigitalPin.P2) == 1) {
+            pins.digitalWritePin(DigitalPin.P14, 0)
+            toAdd = "" + toAdd + "8"
+        } else if (pins.digitalReadPin(DigitalPin.P8) == 1) {
+            pins.digitalWritePin(DigitalPin.P14, 0)
+            toAdd = "" + toAdd + "0"
+        }
+        pins.digitalWritePin(DigitalPin.P14, 0)
+        basic.pause(10)
+        pins.digitalWritePin(DigitalPin.P15, 1)
+        if (pins.digitalReadPin(DigitalPin.P0) == 1) {
+            pins.digitalWritePin(DigitalPin.P15, 0)
+            toAdd = "" + toAdd + "3"
+        } else if (pins.digitalReadPin(DigitalPin.P1) == 1) {
+            pins.digitalWritePin(DigitalPin.P15, 0)
+            toAdd = "" + toAdd + "6"
+        } else if (pins.digitalReadPin(DigitalPin.P2) == 1) {
+            pins.digitalWritePin(DigitalPin.P15, 0)
+            toAdd = "" + toAdd + "9"
+        } else if (pins.digitalReadPin(DigitalPin.P8) == 1) {
+            pins.digitalWritePin(DigitalPin.P15, 0)
+            toAdd = "" + toAdd + "#"
+        }
+        pins.digitalWritePin(DigitalPin.P15, 0)
+        basic.pause(10)
     }
+    basic.showString("" + (toAdd.replace("#", "")))
+    return toAdd
+}
 
     //% weight=80
     //% blockId="getUID" block="Chip ID Text"
-    export function getUID(): string {
-        serial.setRxBufferSize(100)
-        wakeup();
-        let myBuffer: number[] = []
-        let uidBuffer: number[] = []
-        myBuffer = [0x00, 0x00, 0xFF, 0x04, 0xFC, 0xD4, 0x4A, 0x01, 0x00, 0xE1, 0x00]
-        let cmdUID = pins.createBufferFromArray(myBuffer)
-        serial.writeBuffer(cmdUID);
-        basic.pause(50);
-        receivedLen = RxBufferedSize();
-        if (receivedLen == 25) {
-            receivedBuffer = serial.readBuffer(25);
-            for (let i = 0; i < 4; i++) {
-                uid[i] = receivedBuffer[19 + i];
-            }
-
-            if (uid[0] == uid[1] && uid[1] == uid[2] && uid[2] == uid[3] && uid[3] == 0xFF) {
-                return "";
-            } else {
-                uidBuffer = [uid[0], uid[1], uid[2], uid[3]];
-            }
-            return convertString(uidBuffer, 4);
-        } else {
-            return "";
-        }
+    function GibNummerAus () {
+    pins.digitalWritePin(DigitalPin.P13, 1)
+    if (pins.digitalReadPin(DigitalPin.P0) == 1) {
+        pins.digitalWritePin(DigitalPin.P13, 0)
+        return 1
+    } else if (pins.digitalReadPin(DigitalPin.P1) == 1) {
+        pins.digitalWritePin(DigitalPin.P13, 0)
+        return 4
+    } else if (pins.digitalReadPin(DigitalPin.P2) == 1) {
+        pins.digitalWritePin(DigitalPin.P13, 0)
+        return 7
+    } else if (pins.digitalReadPin(DigitalPin.P8) == 1) {
+        pins.digitalWritePin(DigitalPin.P13, 0)
+        return 10
     }
-
-    //% weight=70
-    //% blockId="detectedRFIDcard" block="Chip erkannt?"
-    export function detectedRFIDcard(): boolean {
-        serial.setRxBufferSize(100)
-        wakeup();
-        let myBuffer: number[] = []
-        myBuffer = [0x00, 0x00, 0xFF, 0x04, 0xFC, 0xD4, 0x4A, 0x01, 0x00, 0xE1, 0x00]
-        let cmdUID = pins.createBufferFromArray(myBuffer)
-        serial.writeBuffer(cmdUID);
-        basic.pause(50);
-        receivedLen = RxBufferedSize();
-        if (receivedLen == 25) {
-            receivedBuffer = serial.readBuffer(25);
-            for (let i = 0; i < 4; i++) {
-                uid[i] = receivedBuffer[19 + i];
-            }
-            if (uid[0] == uid[1] && uid[1] == uid[2] && uid[2] == uid[3] && uid[3] == 0xFF) {
-                return false;
-            }
-            return true;
-        }
-        return false;
+    pins.digitalWritePin(DigitalPin.P13, 0)
+    basic.pause(10)
+    pins.digitalWritePin(DigitalPin.P14, 1)
+    if (pins.digitalReadPin(DigitalPin.P0) == 1) {
+        pins.digitalWritePin(DigitalPin.P14, 0)
+        return 2
+    } else if (pins.digitalReadPin(DigitalPin.P1) == 1) {
+        pins.digitalWritePin(DigitalPin.P14, 0)
+        return 5
+    } else if (pins.digitalReadPin(DigitalPin.P2) == 1) {
+        pins.digitalWritePin(DigitalPin.P14, 0)
+        return 8
+    } else if (pins.digitalReadPin(DigitalPin.P8) == 1) {
+        pins.digitalWritePin(DigitalPin.P14, 0)
+        return 0
     }
-
-    function getHexStr(myNum: number): string {
-        let tempStr = "";
-        if (myNum < 0x0A) {
-            tempStr += myNum.toString();
-        } else {
-            switch (myNum) {
-                case 0x0A:
-                    tempStr += "A";
-                    break;
-                case 0x0B:
-                    tempStr += "B";
-                    break;
-                case 0x0C:
-                    tempStr += "C";
-                    break;
-                case 0x0D:
-                    tempStr += "D";
-                    break;
-                case 0x0E:
-                    tempStr += "E";
-                    break;
-                case 0x0F:
-                    tempStr += "F";
-                    break;
-                default:
-                    break;
-
-            }
-        }
-        return tempStr;
+    pins.digitalWritePin(DigitalPin.P14, 0)
+    basic.pause(10)
+    pins.digitalWritePin(DigitalPin.P15, 1)
+    if (pins.digitalReadPin(DigitalPin.P0) == 1) {
+        pins.digitalWritePin(DigitalPin.P15, 0)
+        return 3
+    } else if (pins.digitalReadPin(DigitalPin.P1) == 1) {
+        pins.digitalWritePin(DigitalPin.P15, 0)
+        return 6
+    } else if (pins.digitalReadPin(DigitalPin.P2) == 1) {
+        pins.digitalWritePin(DigitalPin.P15, 0)
+        return 9
+    } else if (pins.digitalReadPin(DigitalPin.P8) == 1) {
+        pins.digitalWritePin(DigitalPin.P15, 0)
+        return 11
     }
+    pins.digitalWritePin(DigitalPin.P15, 0)
+    basic.pause(10)
+    return 12
+}
 
-    function convertString(myBuffer: number[], len: number): string {
-        let myStr = "";
-        let temp = 0;
-        for (let i = 0; i < len; i++) {
-            temp = (myBuffer[i] & 0xF0) >> 4;
-            myStr += getHexStr(temp);
-            temp = (myBuffer[i] & 0x0F);
-            myStr += getHexStr(temp);
-        }
-        return myStr;
-    }
 
 
     basic.forever(() => {
