@@ -1,6 +1,6 @@
 {
     "NFC.NFC_setSerial|block": "Starte NFC Reader",
-    "NFC.nfcEvent|block": "Wenn Chip erkannt wurde",
-    "NFC.getUID|block": "Chip ID Text",
+    "NFC.nfcEvent|block": "Gib Nummernfolge aus",
+    "NFC.getUID|block": "Gib Nummer aus",
     "NFC.detectedRFIDcard|block": "Chip erkannt?"
 }
