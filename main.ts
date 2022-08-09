@@ -65,8 +65,8 @@ namespace NumPad {
 }
 
     //% weight=80
-    //% blockId="getUID" block="Chip ID Text"
-    function GibNummerAus () {
+    //% blockId="getUID" block="Gib Nummer aus"
+  export function GibNummerAus () {
     pins.digitalWritePin(DigitalPin.P13, 1)
     if (pins.digitalReadPin(DigitalPin.P0) == 1) {
         pins.digitalWritePin(DigitalPin.P13, 0)
