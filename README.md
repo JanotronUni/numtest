@@ -1,4 +1,4 @@
-# NFC deutsch
+# NumPad deutsch
 
 micro:bit
 
